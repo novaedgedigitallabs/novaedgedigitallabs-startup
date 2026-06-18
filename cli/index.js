@@ -30,35 +30,87 @@ program
 
 program
   .command('login')
-  .description('Authenticate with GitHub using a Personal Access Token')
-  .action(async () => {
-    console.log('To authenticate, you need a GitHub Personal Access Token (classic) with "repo" scope.');
-    console.log('Generate one here: https://github.com/settings/tokens/new?scopes=repo&description=Startup+Network+CLI\\n');
+  .description('Authenticate with GitHub using Web OAuth or Personal Access Token')
+  .option('--pat', 'Use Personal Access Token instead of Web OAuth')
+  .action(async (options) => {
+    if (options.pat) {
+      console.log('To authenticate, you need a GitHub Personal Access Token (classic) with "repo" scope.');
+      console.log('Generate one here: https://github.com/settings/tokens/new?scopes=repo&description=Startup+Network+CLI\\n');
 
-    const response = await prompts({
-      type: 'password',
-      name: 'token',
-      message: 'Enter your GitHub Personal Access Token:'
-    });
+      const response = await prompts({
+        type: 'password',
+        name: 'token',
+        message: 'Enter your GitHub Personal Access Token:'
+      });
 
-    if (!response.token) {
-      console.log('Login cancelled.');
+      if (!response.token) {
+        console.log('Login cancelled.');
+        return;
+      }
+
+      const octokit = new Octokit({ auth: response.token });
+      
+      try {
+        const { data } = await octokit.rest.users.getAuthenticated();
+        const config = getConfig();
+        config.token = response.token;
+        config.username = data.login;
+        saveConfig(config);
+        
+        console.log(`\\n✅ Successfully authenticated as @${data.login}!`);
+      } catch (error) {
+        console.error('\\n❌ Authentication failed. Please check your token and try again.');
+      }
       return;
     }
 
-    const octokit = new Octokit({ auth: response.token });
+    // Web OAuth Flow
+    console.log('Opening browser for GitHub authentication...');
+    const http = require('http');
     
-    try {
-      const { data } = await octokit.rest.users.getAuthenticated();
-      const config = getConfig();
-      config.token = response.token;
-      config.username = data.login;
-      saveConfig(config);
+    const server = http.createServer(async (req, res) => {
+      const url = new URL(req.url, 'http://localhost:13337');
+      if (url.pathname === '/callback') {
+        const token = url.searchParams.get('token');
+        if (token) {
+          res.writeHead(200, { 'Content-Type': 'text/html' });
+          res.end('<h1>Authentication successful!</h1><p>You can close this window and return to the CLI.</p>');
+          
+          const octokit = new Octokit({ auth: token });
+          try {
+            const { data } = await octokit.rest.users.getAuthenticated();
+            const config = getConfig();
+            config.token = token;
+            config.username = data.login;
+            saveConfig(config);
+            
+            console.log(`\\n✅ Successfully authenticated via Web OAuth as @${data.login}!`);
+          } catch (error) {
+            console.error('\\n❌ Authentication failed. Could not verify token.');
+          }
+          
+          server.close();
+          process.exit(0);
+        } else {
+          res.writeHead(400, { 'Content-Type': 'text/plain' });
+          res.end('Authentication failed: No token received.');
+          server.close();
+          process.exit(1);
+        }
+      }
+    });
+    
+    server.listen(13337, async () => {
+      const backendUrl = process.env.BACKEND_URL || 'http://localhost:4000';
+      const loginUrl = `${backendUrl}/api/auth/cli/login`;
       
-      console.log(`\\n✅ Successfully authenticated as @${data.login}!`);
-    } catch (error) {
-      console.error('\\n❌ Authentication failed. Please check your token and try again.');
-    }
+      try {
+        const { default: open } = await import('open');
+        await open(loginUrl);
+      } catch (err) {
+        console.log(`Please open this URL in your browser:\\n${loginUrl}`);
+      }
+    });
   });
 
 program

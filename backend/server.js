@@ -37,9 +37,52 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'Startup Network API is running' });
 });
 
-// Mock Endpoints for MVP
+// GitHub OAuth configuration
+const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID || 'Ov23li4b7jC0vN0H0N1L'; // Replace with real Client ID
+const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET || 'your_client_secret'; // Replace with real Client Secret
+
+// CLI Auth Endpoints
+app.get('/api/auth/cli/login', (req, res) => {
+  const redirectUri = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&scope=repo`;
+  res.redirect(redirectUri);
+});
+
+app.get('/api/auth/cli/callback', async (req, res) => {
+  const code = req.query.code;
+  if (!code) {
+    return res.status(400).send('No code provided');
+  }
+  
+  try {
+    const response = await fetch('https://github.com/login/oauth/access_token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        client_id: GITHUB_CLIENT_ID,
+        client_secret: GITHUB_CLIENT_SECRET,
+        code
+      })
+    });
+    
+    const data = await response.json();
+    if (data.access_token) {
+      // Redirect to CLI local server
+      res.redirect(`http://localhost:13337/callback?token=${data.access_token}`);
+    } else {
+      res.status(400).json(data);
+    }
+  } catch (err) {
+    console.error('OAuth Callback Error:', err);
+    res.status(500).send('Authentication failed');
+  }
+});
+
+// Mock Endpoints for MVP Web Auth
 app.post('/api/auth/github', (req, res) => {
-  res.json({ message: 'GitHub OAuth endpoint not implemented yet' });
+  res.json({ message: 'GitHub Web OAuth endpoint not implemented yet' });
 });
 
 app.get('/api/me', (req, res) => {
@@ -77,6 +120,118 @@ app.get('/api/startups/:slug', async (req, res) => {
     return res.status(404).json({ message: 'Profile not found' });
   }
   res.json(data);
+});
+
+// Community Features Endpoints
+
+app.get('/api/startups/:slug/community', async (req, res) => {
+  const { slug } = req.params;
+  const { user_id } = req.query; // If provided, check if this user liked/bookmarked
+  
+  try {
+    // Get total likes and bookmarks
+    const { count: likesCount, error: likesError } = await supabase
+      .from('likes')
+      .select('*', { count: 'exact', head: true })
+      .eq('startup_slug', slug);
+
+    const { count: bookmarksCount, error: bookmarksError } = await supabase
+      .from('bookmarks')
+      .select('*', { count: 'exact', head: true })
+      .eq('startup_slug', slug);
+
+    let hasLiked = false;
+    let hasBookmarked = false;
+
+    if (user_id) {
+      const { data: likeData } = await supabase.from('likes').select('id').eq('startup_slug', slug).eq('user_id', user_id).maybeSingle();
+      const { data: bookmarkData } = await supabase.from('bookmarks').select('id').eq('startup_slug', slug).eq('user_id', user_id).maybeSingle();
+      hasLiked = !!likeData;
+      hasBookmarked = !!bookmarkData;
+    }
+
+    res.json({
+      likes: likesCount || 0,
+      bookmarks: bookmarksCount || 0,
+      hasLiked,
+      hasBookmarked
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch community data' });
+  }
+});
+
+app.post('/api/startups/:slug/like', async (req, res) => {
+  const { slug } = req.params;
+  const { user_id } = req.body;
+  
+  if (!user_id) return res.status(400).json({ error: 'user_id is required' });
+  
+  const { data: existing } = await supabase.from('likes').select('id').eq('startup_slug', slug).eq('user_id', user_id).maybeSingle();
+  
+  if (existing) {
+    // Unlike
+    await supabase.from('likes').delete().eq('id', existing.id);
+    return res.json({ liked: false });
+  } else {
+    // Like
+    await supabase.from('likes').insert({ startup_slug: slug, user_id });
+    return res.json({ liked: true });
+  }
+});
+
+app.post('/api/startups/:slug/bookmark', async (req, res) => {
+  const { slug } = req.params;
+  const { user_id } = req.body;
+  
+  if (!user_id) return res.status(400).json({ error: 'user_id is required' });
+  
+  const { data: existing } = await supabase.from('bookmarks').select('id').eq('startup_slug', slug).eq('user_id', user_id).maybeSingle();
+  
+  if (existing) {
+    // Unbookmark
+    await supabase.from('bookmarks').delete().eq('id', existing.id);
+    return res.json({ bookmarked: false });
+  } else {
+    // Bookmark
+    await supabase.from('bookmarks').insert({ startup_slug: slug, user_id });
+    return res.json({ bookmarked: true });
+  }
+});
+
+app.get('/api/startups/:slug/comments', async (req, res) => {
+  const { slug } = req.params;
+  
+  const { data, error } = await supabase
+    .from('comments')
+    .select('*')
+    .eq('startup_slug', slug)
+    .order('created_at', { ascending: false });
+    
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+  
+  res.json({ comments: data || [] });
+});
+
+app.post('/api/startups/:slug/comments', async (req, res) => {
+  const { slug } = req.params;
+  const { user_id, content } = req.body;
+  
+  if (!user_id || !content) return res.status(400).json({ error: 'user_id and content are required' });
+  
+  const { data, error } = await supabase
+    .from('comments')
+    .insert({ startup_slug: slug, user_id, content })
+    .select('*')
+    .single();
+    
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+  
+  res.json({ comment: data });
 });
 
 function verifyGitHubSignature(req) {

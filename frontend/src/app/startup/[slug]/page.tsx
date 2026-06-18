@@ -3,6 +3,8 @@ import Image from "next/image";
 import { Github, Link as LinkIcon, User, Code, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Startup } from "../../components/Feed";
+import CommunityActions from "../../components/CommunityActions";
+import ViewTracker from "../../components/ViewTracker";
 
 async function getStartup(slug: string): Promise<Startup | null> {
   try {
@@ -134,6 +136,9 @@ export default async function StartupPage({ params }: { params: Promise<{ slug: 
             </div>
           </div>
         </div>
+        
+        {/* Community Interactions (Likes, Bookmarks, Comments) */}
+        <CommunityActions slug={startup.slug} />
       </div>
     </div>
   );
