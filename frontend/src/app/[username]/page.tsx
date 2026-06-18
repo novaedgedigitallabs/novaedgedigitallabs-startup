@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, User, Github, LayoutGrid } from "lucide-react";
+import { ArrowLeft, User, LayoutGrid } from "lucide-react";
+import { Github } from "../components/GithubIcon";
 import { Startup } from "../components/Feed";
 import Image from "next/image";
 

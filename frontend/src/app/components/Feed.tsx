@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Github, Link as LinkIcon, User, Code, MapPin } from "lucide-react";
+import { Search, Link as LinkIcon, User, Code, MapPin } from "lucide-react";
+import { Github } from "./GithubIcon";
 import Image from "next/image";
 
 export interface Startup {

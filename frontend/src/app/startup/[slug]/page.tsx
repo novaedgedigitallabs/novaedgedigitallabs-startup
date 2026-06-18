@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import { Github, Link as LinkIcon, User, Code, ArrowLeft } from "lucide-react";
+import { Link as LinkIcon, User, Code, ArrowLeft } from "lucide-react";
+import { Github } from "../../components/GithubIcon";
 import Link from "next/link";
 import { Startup } from "../../components/Feed";
 import CommunityActions from "../../components/CommunityActions";
