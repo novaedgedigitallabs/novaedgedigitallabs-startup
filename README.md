@@ -2,7 +2,7 @@
   <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&height=250&section=header&text=NovaEdge%20Startup%20Network&fontSize=50&animation=fadeIn&fontAlignY=38&desc=CLI%20%26%20Web%20Platform%20for%20Publishing%20Startups&descAlignY=51&descAlign=62" alt="Header" />
 </div>
 
-<h1 align="center">🚀 NovaEdge Startup Network</h1>
+<h1 align="center">NovaEdge Startup Network</h1>
 
 <p align="center">
   <a href="#features"><strong>Features</strong></a> ·
@@ -17,19 +17,19 @@
 
 ---
 
-## ✨ Features
+## Features
 
-- **💻 CLI First**: Initialize and publish your startup directly from your terminal.
-- **🔐 Secure OAuth**: Seamless GitHub login and authentication.
-- **⚡ Real-time Feed**: Explore the latest startups instantly on the web interface.
-- **📊 Analytics & Engagement**: View counts, likes, bookmarks, and comments.
-- **🔍 Lightning Fast Search**: Powered by Meilisearch for instant discovery.
+- **CLI First**: Initialize and publish your startup directly from your terminal.
+- **Secure OAuth**: Seamless GitHub login and authentication.
+- **Real-time Feed**: Explore the latest startups instantly on the web interface.
+- **Analytics & Engagement**: View counts, likes, bookmarks, and comments.
+- **Lightning Fast Search**: Powered by Meilisearch for instant discovery.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png" width="100%" />
 </div>
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 <div align="center">
   <img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" />
@@ -43,7 +43,7 @@
   <img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png" width="100%" />
 </div>
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Install the CLI
 
@@ -71,7 +71,7 @@ startup push
   <img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png" width="100%" />
 </div>
 
-## 🧠 Architecture Overview
+## Architecture Overview
 
 Our platform consists of three main components working in harmony:
 
@@ -81,5 +81,5 @@ Our platform consists of three main components working in harmony:
 
 <br/>
 <div align="center">
-  <i>Built with ❤️ by NovaEdge Digital Labs</i>
+  <i>Built by NovaEdge Digital Labs</i>
 </div>
