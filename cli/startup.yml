@@ -1,0 +1,14 @@
+name: cli
+tagline: "Your catchy tagline here"
+status: building
+looking_for:
+  - beta-users
+  - contributors
+tech:
+  - Node.js
+links:
+  github: "username/cli"
+  website: "https://yourwebsite.com"
+description: >
+  Write a short summary of your startup here.
+logo: "https://via.placeholder.com/150"
