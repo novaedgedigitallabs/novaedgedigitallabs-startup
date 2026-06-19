@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, Link as LinkIcon, User, Code, MapPin } from "lucide-react";
 import { Github } from "./GithubIcon";
 import Image from "next/image";
+import Link from "next/link";
 
 export interface Startup {
   slug: string;
@@ -120,9 +121,10 @@ export default function Feed({ initialStartups }: FeedProps) {
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
                 key={startup.slug}
-                className="glass-panel p-6 rounded-3xl flex flex-col gap-4 border border-white/5 hover:border-white/15 transition-all group"
+                className="glass-panel p-6 rounded-3xl flex flex-col gap-4 border border-white/5 hover:border-white/15 transition-all group relative cursor-pointer"
               >
-                <div className="flex items-start justify-between">
+                <Link href={`/startup/${startup.slug}`} className="absolute inset-0 z-10" aria-label={`View ${startup.name} profile`} />
+                <div className="flex items-start justify-between relative z-0">
                   <div className="h-12 w-12 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 overflow-hidden relative">
                     {startup.logo_url ? (
                       <Image src={startup.logo_url} alt={startup.name} fill className="object-cover" />
@@ -137,7 +139,7 @@ export default function Feed({ initialStartups }: FeedProps) {
                   )}
                 </div>
 
-                <div>
+                <div className="relative z-0">
                   <h3 className="font-outfit text-2xl font-bold text-white mb-1 group-hover:text-blue-400 transition-colors">
                     {startup.name}
                   </h3>
@@ -146,7 +148,7 @@ export default function Feed({ initialStartups }: FeedProps) {
                   </p>
                 </div>
 
-                <div className="flex-1">
+                <div className="flex-1 relative z-0">
                   {startup.tech_stack && startup.tech_stack.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-4">
                       {startup.tech_stack.slice(0, 3).map((tech) => (
@@ -163,14 +165,14 @@ export default function Feed({ initialStartups }: FeedProps) {
                   )}
                 </div>
 
-                <div className="pt-4 mt-auto border-t border-white/5 flex items-center justify-between">
+                <div className="pt-4 mt-auto border-t border-white/5 flex items-center justify-between relative z-20">
                   <div className="flex items-center gap-2 text-sm text-white/50">
                     <User className="w-4 h-4" />
                     <span>@{startup.owner_github_username}</span>
                   </div>
                   
                   {startup.links?.github && (
-                    <a href={startup.links.github} target="_blank" rel="noreferrer" className="text-white/50 hover:text-white transition-colors">
+                    <a href={startup.links.github} target="_blank" rel="noreferrer" className="text-white/50 hover:text-white transition-colors relative z-20">
                       <Github className="w-5 h-5" />
                     </a>
                   )}
